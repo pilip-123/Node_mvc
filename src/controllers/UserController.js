@@ -1,19 +1,20 @@
 import UserModel from '../models/UserModel.js';
+import { Basecontrollers } from './baseController.js';
 
-export default class UserController {
+export class UserController  extends Basecontrollers{
 
   // LIST
-  static async getUsers(req, res) {
+  async getUsers(req, res) {
     try {
       const users = await UserModel.getAll();
-      res.send(users);
+      this.success(res, 'get users successful', users);
     } catch (err) {
-      res.status(500).send('database error');
+      this.error(res, err.message, 500);
     }
   }
 
   // CREATE
-  static async createUser(req, res) {
+  async createUser(req, res) {
     try {
       const { name, age, gender, numberphone, phone } = req.body;
 
@@ -25,15 +26,14 @@ export default class UserController {
         gender,
         phone: phoneValue
       });
-
-      res.status(201).send(user);
+      this.success(res, 'user created successful', user, 201);
     } catch (err) {
-      res.status(500).send('database error');
+      this.error(res, err.message, 500);
     }
   }
 
   // UPDATE
-  static async updateUser(req, res) {
+  async updateUser(req, res) {
     try {
       const { id } = req.params;
       const { name, age, gender, numberphone, phone } = req.body;
@@ -48,32 +48,32 @@ export default class UserController {
       });
 
       if (result.affectedRows === 0) {
-        return res.status(404).send('user not found');
+        return this.error(res, 'User not found', 404);
       }
 
-      res.send('successful');
+      return this.success(res, 'user updated successful');
     } catch (err) {
       if (err.message === 'no fields to update') {
-        return res.status(400).send(err.message);
+        return this.error(res, err.message, 400);
       }
-      res.status(500).send('database error');
+      return this.error(res, err.message, 500);
     }
   }
 
   // DELETE
-  static async deleteUser(req, res) {
+  async deleteUser(req, res) {
     try {
       const { id } = req.params;
 
       const result = await UserModel.delete(id);
 
       if (result.affectedRows === 0) {
-        return res.status(404).send('user not found');
+        return this.error(res, 'User not found', 404);
       }
 
-      res.send('successful');
+      return this.success(res, 'user deleted successful');
     } catch (err) {
-      res.status(500).send('database error');
+      this.error(res, err.message, 500);
     }
   }
 }
